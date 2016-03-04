@@ -20,14 +20,13 @@ defmodule Stack.Server do
 
   def handle_call :pop, _from, {contents, stash_pid} do
     [head|tail] = contents
+    :ok = Stack.Stash.save stash_pid, tail
     {:reply, head, {tail, stash_pid}}
   end
 
   def handle_cast {:push, value}, {contents, stash_pid} do
-    {:noreply, {[value|contents], stash_pid}}
-  end
-
-  def terminate _reason, {contents, stash_pid} do
-    Stack.Stash.save stash_pid, contents
+    new_contents = [value|contents]
+    :ok = Stack.Stash.save stash_pid, new_contents
+    {:noreply, {new_contents, stash_pid}}
   end
 end
